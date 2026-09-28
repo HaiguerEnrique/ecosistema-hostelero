@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<style>
+  body { font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: #1d2b27; margin: 16px; }
+  label { display: block; font-weight: 600; margin: 12px 0 4px; }
+  input, select { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cfd8d4; border-radius: 6px; font: inherit; }
+  p { margin: 0 0 8px; color: #44504c; }
+  .fila { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  button { padding: 8px 14px; border-radius: 6px; border: 1px solid #1f4d43; background: #1f4d43; color: #fff; font: inherit; cursor: pointer; }
+  button.sec { background: #fff; color: #1f4d43; }
+  #msg { margin-top: 10px; min-height: 20px; }
+  .err { color: #b3261e; } .ok { color: #1f4d43; }
+</style>
+</head>
+<body>
+  <p>Pega tu clave de la API de Anthropic (empieza por <b>sk-ant-</b>). Se guarda solo para tu usuario, fuera de la hoja: nadie con acceso al archivo puede verla.</p>
+  <p id="actual"></p>
+  <label for="k">Clave de API</label>
+  <input id="k" type="password" autocomplete="off" placeholder="sk-ant-...">
+  <label for="m">Modelo</label>
+  <select id="m">
+    <option value="claude-opus-5">Claude Opus 5 · más preciso (recomendado)</option>
+    <option value="claude-sonnet-5">Claude Sonnet 5 · más económico</option>
+  </select>
+  <label style="font-weight:400;display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="comp" style="width:auto;margin-top:3px"> Que también la usen las personas con acceso a esta hoja (tu equipo). Solo quien pueda editar el código del script podría llegar a verla.</label>
+  <div id="msg"></div>
+  <div class="fila">
+    <button class="sec" onclick="google.script.host.close()">Cerrar</button>
+    <button id="g" onclick="guardar()">Guardar</button>
+  </div>
+<script>
+  google.script.run.withSuccessHandler(function (e) {
+    document.getElementById('m').value = e.modelo;
+    document.getElementById('comp').checked = e.compartida;
+    document.getElementById('actual').textContent = e.configurada ? 'Ya hay una clave guardada (termina en …' + e.final + '). Si pegas otra, la sustituye.' : '';
+  }).estadoClave();
+  function guardar() {
+    var msg = document.getElementById('msg'), b = document.getElementById('g');
+    msg.className = ''; msg.textContent = 'Comprobando la clave…'; b.disabled = true;
+    google.script.run
+      .withSuccessHandler(function (t) { msg.className = 'ok'; msg.textContent = t; b.disabled = false; document.getElementById('k').value = ''; })
+      .withFailureHandler(function (e) { msg.className = 'err'; msg.textContent = e.message; b.disabled = false; })
+      .guardarClave(document.getElementById('k').value, document.getElementById('m').value, document.getElementById('comp').checked);
+  }
+</script>
+</body>
+</html>

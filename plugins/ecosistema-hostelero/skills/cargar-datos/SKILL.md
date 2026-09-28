@@ -1,0 +1,36 @@
+---
+name: cargar-datos
+description: Pasa datos del hostelero a su hoja del Ecosistema Hostelero — sus Excel o cuentas antiguas, la configuración inicial, la carta con precios, las recetas (escandallos), los ingredientes y las facturas de proveedores. Úsala cuando diga «pasa mis Excel», «apúntame esta factura», «mete mi carta», «calcula lo que me cuesta este plato» o tras instalar. Requiere una carpeta con ecosistema.json.
+---
+
+# Cargar datos en la hoja
+
+Tú **preparas** los datos; el dueño los **revisa y carga** con un botón. Nunca se escribe nada en su hoja sin que él pulse «Sí».
+
+**Cómo funciona:** escribes `app/PersonalDatos.js` con `var DATOS_CLAUDE = {…}`, lo subes con `clasp push --force` y el dueño pulsa en su hoja **🍽️ Ecosistema › 📥 Cargar datos preparados por Claude**. La hoja comprueba todo, le enseña un resumen y, si dice que sí, lo escribe. Después retiras el archivo.
+
+**Formato exacto:** está al principio de `app/Importar.js` (léelo antes de empezar). Categorías, canales, formas de pago y categorías de carta que trae la hoja de fábrica: en `app/Construir.js` (`construirConfiguracion_`). Las que el negocio haya añadido están apuntadas en `NOTAS.md`.
+
+**Cómo hablar:** sin tecnicismos. Enséñale lo que vas a cargar como lo vería él (tabla corta, cifras redondas, totales por mes) y pregúntale lo que no esté claro. Nunca rellenes un hueco inventando.
+
+## Pasos
+1. **Recoger.** Pídele los archivos (Excel, PDF, fotos) y guárdalos en `datos/`. Si son del TPV (informes de ventas o de facturas del día), no pasan por aquí: se suben en el panel, pestaña Ventas.
+2. **Entender y proponer.** Lee los archivos y propón cómo se colocan:
+   - Cada gasto a una **categoría de gasto** de su hoja. Las compras mixtas (cash & carry) se reparten por líneas: comida, bebida, envases, limpieza…
+   - La **retirada del dueño**, los **préstamos**, las **inversiones** (maquinaria, reformas) y los **impuestos** van a sus categorías, no a gastos normales: si no, el resultado del mes sale mal.
+   - Ventas: por día si las tiene; si solo tiene totales del mes, una línea por mes y canal (sin día).
+   - Enséñale el reparto (totales por categoría y mes) y **espera su visto bueno**. Si algo no encaja con ninguna categoría, pregúntale si crear una nueva (`categoriasGasto`).
+3. **Escribir `app/PersonalDatos.js`.** Con un `id` nuevo y claro (`excel-2026-ene-sep`, `factura-makro-2026-10-03`…) y una `descripcion` en su idioma. Importes en euros con 2 decimales; porcentajes como fracción (10 % = 0.1); meses 1–12.
+   - Comprueba antes de subir: `node --check app/PersonalDatos.js` y que los totales por mes cuadran con sus archivos.
+   - Mucho volumen (más de ~3.000 líneas o ~500 KB): por tandas, un archivo cada vez, cada uno con su `id`.
+4. **Subir:** `clasp push --force`.
+5. **Cargar (el dueño):** «Abre tu hoja y pulsa 🍽️ Ecosistema › 📥 Cargar datos preparados por Claude. Revisa el resumen y dale a Sí». Si la hoja da un error, te lo leerá: corrígelo y vuelve al paso 3.
+6. **Retirar:** cuando te diga que se ha cargado, borra `app/PersonalDatos.js` y `clasp push --force`. Los datos ya están en la hoja; el archivo solo era el transporte.
+7. **Apuntar** en `NOTAS.md` las decisiones (cómo se clasifica cada proveedor, categorías nuevas, platos dados de alta).
+
+## Casos frecuentes
+- **Configuración inicial:** `configuracion` (nombre, año, saldo inicial = caja + bancos el día que empieza, inventario inicial, IVA de ventas si no es el 10 %) y `locales` si tiene varios.
+- **Carta y recetas:** `platos` (nombre, categoría de la carta, precio con IVA) + `ingredientes` (unidad kg, l o ud; precio del formato sin IVA y cuánto trae el formato; merma si se pierde al limpiar o cocinar) + `recetas` (cantidades en la unidad del ingrediente: 150 g de carne = 0.150 kg). Los **gramos son del plato servido**: si el ingrediente se pierde al cocinar (patatas, carne desmechada), pon la merma en el ingrediente. Empieza por los 10 platos que más vende.
+- **Una factura (sin clave de API):** lee la foto o el PDF, propón las líneas (proveedor, número, fecha, base, IVA y categoría por línea; reparte las compras mixtas) y cuadra base + IVA con el total. Cárgala como `gastos` con `observaciones: "Factura <proveedor> <número>"`. Recuérdale que guarde la factura en su Drive, en `Facturas/<año>/<trimestre>` (menú 📁 Configurar carpetas de Drive la crea).
+- **Cierre de mes:** `cierres` con el efectivo y el banco del último día y el inventario final.
+- **Ya cargado:** si la hoja avisa de que ese `id` ya se cargó, NO sigas salvo que el dueño quiera duplicarlo a propósito.

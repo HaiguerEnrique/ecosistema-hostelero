@@ -1,0 +1,14 @@
+{
+  "name": "ecosistema",
+  "description": "Ecosistema Hostelero: control financiero, escandallos y panel para bares y restaurantes, instalado y mantenido por tu propio Claude.",
+  "owner": {
+    "name": "Ecosistema Hostelero"
+  },
+  "plugins": [
+    {
+      "name": "ecosistema-hostelero",
+      "source": "./plugins/ecosistema-hostelero",
+      "description": "Instala la plantilla en tu Google Drive, pasa tus datos, la actualiza y te la adapta."
+    }
+  ]
+}
