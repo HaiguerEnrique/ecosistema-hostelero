@@ -4,7 +4,7 @@
  * Si cambias una fila o columna, cámbiala SOLO aquí.
  */
 var L = {
-  VERSION: '2.5.0',
+  VERSION: '2.5.1',
 
   INI: 'Inicio',
   RES: 'Resumen anual',
@@ -52,6 +52,7 @@ var L = {
     primeObj: 'B14', primeAlerta: 'C14', margenObj: 'B15', margenAlerta: 'C15',
     fcPlatoObj: 'B16', fcPlatoAlerta: 'C16',
     tpvDesde: 'B17',   // Datos del TPV desde (fecha): lo anterior se ignora al subir informes
+    ingAuto: 'B18',    // Apuntar ingresos desde el TPV: Sí / No
     listFirst: 21,
     cat:   { col: 'A', last: 48 },  // Categoría de gasto | B Tipo | C Qué incluye
     tipos: { col: 'E', last: 27 },  // Tipo | F Qué significa

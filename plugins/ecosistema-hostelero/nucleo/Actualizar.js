@@ -21,7 +21,10 @@ var PARCHES = [
   { version: '2.3.0', descripcion: 'Informes del TPV por día (se puede subir el cierre de cada noche) e ingresos automáticos desde el TPV',
     aplicar: function (ss) { prepararTpvDiario_(ss); } },
   { version: '2.5.0', descripcion: 'Configuración: «Datos del TPV desde» (lo anterior a esa fecha se ignora al subir informes)',
-    aplicar: function (ss) { prepararTpvDesde_(ss); } }
+    aplicar: function (ss) { prepararTpvDesde_(ss); } },
+  // En las hojas que ya existían se deja en «No»: su dueño apunta los ingresos con su cierre de caja por turno.
+  { version: '2.5.1', descripcion: 'Configuración: «Apuntar ingresos desde el TPV» (Sí/No). En las hojas existentes queda en No.',
+    aplicar: function (ss) { prepararIngAuto_(ss, 'No'); } }
 ];
 
 function formulaDias_(A, F) {
@@ -92,6 +95,18 @@ function prepararTpvDesde_(ss) {
   cfg.getRange(c).setValue('Opcional. Al subir informes del TPV se ignoran las noches anteriores a esta fecha (por ejemplo, si tus cuentas empiezan más tarde que el TPV).')
     .setFontColor(COLOR.note).setWrap(true);
   bordes_(cfg.getRange(a + ':' + L.C.tpvDesde));
+}
+
+/** 2.5.1: casilla «Apuntar ingresos desde el TPV» (fila 18). `porDefecto` solo si está vacía. */
+function prepararIngAuto_(ss, porDefecto) {
+  var cfg = ss.getSheetByName(L.CFG), a = L.C.ingAuto.replace('B', 'A'), c = L.C.ingAuto.replace('B', 'C');
+  cfg.getRange(a).setValue('Apuntar ingresos desde el TPV').setFontWeight('bold');
+  var celda = cfg.getRange(L.C.ingAuto);
+  celda.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build());
+  if (celda.getValue() === '') celda.setValue(porDefecto);
+  cfg.getRange(c).setValue('Sí = al subir el informe de facturas se apuntan solos los ingresos de cada día. No = los informes solo sirven para el panel y los ingresos los apuntas tú (por ejemplo, con tu cierre de caja por turno).')
+    .setFontColor(COLOR.note).setWrap(true);
+  bordes_(cfg.getRange(a + ':' + L.C.ingAuto));
 }
 
 /** 2.3.0: las hojas de horas y camareros pasan a ser por día; nueva hoja de platos por día. */

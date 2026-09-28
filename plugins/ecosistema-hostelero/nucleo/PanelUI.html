@@ -442,7 +442,7 @@ function pintarVentasTodos() {
 var V = null;
 var MSG_INF = '';
 function cabeceraSubir() {
-  return '<div class="subir"><p><b>Informes del TPV</b><br>Al cerrar caja, descarga en Foodyservice (Analíticas › Informes) el «Informe de ventas» y el «Informe de facturas» del día y súbelos juntos. Solo se sustituyen los días que traigan; los ingresos del día se apuntan solos.</p>' +
+  return '<div class="subir"><p><b>Informes del TPV</b><br>Al cerrar caja, descarga en Foodyservice (Analíticas › Informes) el «Informe de ventas» y el «Informe de facturas» del día y súbelos juntos. Solo se sustituyen los días que traigan' + (V && V.ingAuto === false ? '.' : '; los ingresos del día se apuntan solos.') + '</p>' +
     '<input type="file" id="informe" accept=".xlsx,.xls,.csv" multiple hidden><button class="btn" id="btnInforme">Subir informes</button></div><div id="msgInforme">' + MSG_INF + '</div>';
 }
 function textoInforme(r) {
@@ -454,7 +454,8 @@ function textoInforme(r) {
   var i = r.ingresos;
   if (i && i.dias) t += ' Ingresos apuntados en la hoja: ' + i.dias + (i.dias === 1 ? ' día.' : ' días.');
   if (i && i.saltados.length) t += ' No se apuntaron ' + i.saltados.length + ' días porque ya tenían ingresos a mano' + (i.saltados.length <= 3 ? ': ' + i.saltados.join(', ') : '') + '.';
-  if (r.tipo === 'ventas' && i && !i.dias && !i.saltados.length) t += ' Sube también el informe de facturas para apuntar los ingresos.';
+  if (i && i.desactivado) { if (r.tipo === 'facturas') t += ' Los ingresos no se apuntan solos (Configuración › Apuntar ingresos desde el TPV = No).'; }
+  else if (r.tipo === 'ventas' && i && !i.dias && !i.saltados.length) t += ' Sube también el informe de facturas para apuntar los ingresos.';
   return t;
 }
 function cargarVentas(mes) {

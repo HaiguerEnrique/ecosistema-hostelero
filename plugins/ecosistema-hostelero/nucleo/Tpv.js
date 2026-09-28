@@ -167,6 +167,11 @@ function agregarFacturas_(rows) {
 }
 function unicos_(a) { var o = {}; a.forEach(function (x) { o[x] = true; }); return Object.keys(o).sort(); }
 
+/** Configuración › «Apuntar ingresos desde el TPV»: con «No» los informes se guardan pero los ingresos los apunta el dueño. */
+function ingresosAutomaticos_() {
+  return String(libro_().getSheetByName(L.CFG).getRange(L.C.ingAuto).getValue()).trim().toLowerCase() !== 'no';
+}
+
 /** Configuración › «Datos del TPV desde»: las noches anteriores se ignoran al subir informes ('' = sin límite). */
 function tpvDesde_() {
   var v = libro_().getSheetByName(L.CFG).getRange(L.C.tpvDesde).getValue();
@@ -304,6 +309,7 @@ function guardarFacturas_(a) {
  * (salvo los de plataformas de reparto, que no pasan por el TPV).
  */
 function rellenarIngresos_(dias) {
+  if (!ingresosAutomaticos_()) return { dias: 0, saltados: [], desactivado: true };
   var ss = libro_(), cfg = cfg_(), I = L.ING, n = I.last - I.first + 1;
   var tipoCanal = {}; cfg.canales.forEach(function (c) { tipoCanal[c.canal] = c.tipo; });
   var existe = function (c) { return tipoCanal.hasOwnProperty(c); };
@@ -456,7 +462,7 @@ function ventasTpvMes_(mes) {
   camsD.forEach(function (f) { var x = cAgg[f[1]] || (cAgg[f[1]] = { camarero: f[1], ventas: 0, pedidos: 0, cancelado: 0 }); x.ventas += f[2]; x.pedidos += f[3]; x.cancelado += f[4]; });
   var tickets = sumD(11), cobrado = sumD(13) + sumD(14) + sumD(15);
   return {
-    mes: mes, conDatos: dias.length > 0 || filas.length > 0,
+    mes: mes, conDatos: dias.length > 0 || filas.length > 0, ingAuto: ingresosAutomaticos_(),
     desde: dias.length ? iso_(dias[0][0]) : null, hasta: dias.length ? iso_(dias[dias.length - 1][0]) : null,
     noches: dias.filter(function (f) { return f[2] > 0; }).length,
     ventas: r2_(sumD(2)), pedidos: sumD(3), pedidosLlevar: pedLlevar, cancelado: r2_(sumD(10)),

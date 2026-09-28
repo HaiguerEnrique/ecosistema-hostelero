@@ -1,6 +1,6 @@
 {
   "name": "ecosistema-hostelero",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Ecosistema Hostelero: tu hoja de control financiero y de escandallos en Google Sheets, con panel en el móvil. Tu Claude la instala, carga tus datos, la actualiza y te la adapta.",
   "author": {
     "name": "Ecosistema Hostelero"
