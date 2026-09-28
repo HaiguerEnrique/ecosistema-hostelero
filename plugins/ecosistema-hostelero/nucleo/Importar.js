@@ -21,7 +21,10 @@
  *   cierres:  [{ mes: 1-12, efectivo, bancos, inventarioFinal }],
  *   ingredientes: [{ nombre, unidad: 'kg'|'l'|'ud', proveedor, precio, cantidad, merma, notas }],  // si existe, se actualiza
  *   platos:   [{ nombre, categoria, pvp, iva, envase }],                                        // si existe, se actualiza
- *   recetas:  [{ plato, ingrediente, cantidad }]    // sustituye la receta entera de cada plato que aparece
+ *   recetas:  [{ plato, ingrediente, cantidad }],   // sustituye la receta entera de cada plato que aparece
+ *   ventasPlatos: [{ mes: 1-12, nombre, unidades, importe, udsLlevar, plato }]
+ *     // ventas por plato de un TPV que no es Foodyservice (resumen mensual). `nombre` = como sale en el TPV;
+ *     // `plato` (opcional) = plato de la carta si el nombre no coincide. Sustituye lo cargado antes así para ese mes.
  * }
  */
 
@@ -129,6 +132,21 @@ function planCarga_(d) {
     });
     resumen.push('• Recetas de ' + Object.keys(platosRec).length + ' platos (' + d.recetas.length + ' líneas; sustituyen a las que hubiera)');
   }
+  if (d.ventasPlatos && d.ventasPlatos.length) {
+    d.ventasPlatos.forEach(function (v) {
+      if (!v.nombre) throw new Error('Hay una venta por plato sin nombre.');
+      num(v.unidades, 'Las unidades de «' + v.nombre + '»'); num(v.importe, 'El importe de «' + v.nombre + '»');
+      if (v.plato && plNombres.indexOf(v.plato) < 0) throw new Error('La venta de «' + v.nombre + '» apunta a un plato que no existe: «' + v.plato + '».');
+    });
+    var tv = libro_().getSheetByName(L.TPV).getRange(L.TV.first, 1, L.TV.last - L.TV.first + 1, 3).getValues();
+    var mesesConTpv = {};
+    tv.forEach(function (f) { if (f[1] !== '' && f[2] === TPV.ORIGEN && f[0] instanceof Date) mesesConTpv[f[0].getMonth()] = 1; });
+    d.ventasPlatos.forEach(function (v) {
+      var i = mesIdx_(v.mes);
+      if (mesesConTpv[i]) avisos.push('• ' + L.MESES[i] + ' ya tiene ventas por plato de los informes del panel: se sumarán las dos.');
+    });
+    resumen.push('• ' + d.ventasPlatos.length + ' ventas por plato (' + porMes(d.ventasPlatos) + ')');
+  }
   if (!resumen.length) throw new Error('Los datos están vacíos.');
   return { resumen: resumen, avisos: avisos.filter(function (a, i, arr) { return arr.indexOf(a) === i; }) };
 }
@@ -214,9 +232,26 @@ function ejecutarCarga_(d) {
     rango.setValues(v);
     hecho.push('• Recetas de ' + Object.keys(platos).length + ' platos');
   }
+  if (d.ventasPlatos && d.ventasPlatos.length) {
+    var anio = cfg_().anio, T = L.TV, tvSh = ss.getSheetByName(L.TPV), nT = T.last - T.first + 1;
+    var meses = {}; d.ventasPlatos.forEach(function (v) { meses[mesIdx_(v.mes)] = 1; });
+    // Fuera lo cargado antes por Claude en esos meses (A:C y E:G; D es fórmula)
+    var ac = tvSh.getRange(T.first, 1, nT, 3).getValues(), eg = tvSh.getRange(T.first, 5, nT, 3).getValues();
+    ac.forEach(function (f, i) {
+      if (f[2] === ORIGEN_CLAUDE && f[0] instanceof Date && f[0].getFullYear() === anio && meses[f[0].getMonth()]) { ac[i] = ['', '', '']; eg[i] = ['', '', '']; }
+    });
+    tvSh.getRange(T.first, 1, nT, 3).setValues(ac); tvSh.getRange(T.first, 5, nT, 3).setValues(eg);
+    escribirFilas_(tvSh, T, [[1, 3], [5, 3]], d.ventasPlatos.map(function (v) {
+      return [[new Date(anio, mesIdx_(v.mes), 1), v.nombre, ORIGEN_CLAUDE], [v_(v.unidades), r2v_(v.importe), v_(v.udsLlevar)]];
+    }), 'ventas por plato');
+    var pares = d.ventasPlatos.filter(function (v) { return v.plato && v.plato !== v.nombre; }).map(function (v) { return [v.nombre, v.plato]; });
+    if (pares.length) asignarNombresTpv(pares);
+    hecho.push('• ' + d.ventasPlatos.length + ' ventas por plato');
+  }
   SpreadsheetApp.flush();
   return hecho;
 }
+var ORIGEN_CLAUDE = 'Claude';   // columna Origen de Ventas TPV para lo cargado con «Cargar datos preparados por Claude»
 
 function v_(x) { return x === undefined || x === null ? '' : x; }
 function r2v_(x) { return typeof x === 'number' ? Math.round(x * 100) / 100 : v_(x); }

@@ -28,9 +28,13 @@ Tú **preparas** los datos; el dueño los **revisa y carga** con un botón. Nunc
 6. **Retirar:** cuando te diga que se ha cargado, borra `app/PersonalDatos.js` y `clasp push --force`. Los datos ya están en la hoja; el archivo solo era el transporte.
 7. **Apuntar** en `NOTAS.md` las decisiones (cómo se clasifica cada proveedor, categorías nuevas, platos dados de alta).
 
+## Todo de una vez
+Si en la misma conversación el dueño te da varias cosas (ventas, escandallos, facturas, su carta…), júntalas en **un solo** `PersonalDatos.js`: la hoja lo comprueba todo junto, enseña un único resumen y se carga con un solo «Sí». El orden lo resuelve la hoja (primero configuración y listas, luego ingredientes y platos, luego recetas y ventas). Díselo así: «Pásamelo todo y te lo dejo listo para cargar de una vez».
+
 ## Casos frecuentes
 - **Configuración inicial:** `configuracion` (nombre, año, saldo inicial = caja + bancos el día que empieza, inventario inicial, IVA de ventas si no es el 10 %) y `locales` si tiene varios.
 - **Carta y recetas:** `platos` (nombre, categoría de la carta, precio con IVA) + `ingredientes` (unidad kg, l o ud; precio del formato sin IVA y cuánto trae el formato; merma si se pierde al limpiar o cocinar) + `recetas` (cantidades en la unidad del ingrediente: 150 g de carne = 0.150 kg). Los **gramos son del plato servido**: si el ingrediente se pierde al cocinar (patatas, carne desmechada), pon la merma en el ingrediente. Empieza por los 10 platos que más vende.
 - **Una factura (sin clave de API):** lee la foto o el PDF, propón las líneas (proveedor, número, fecha, base, IVA y categoría por línea; reparte las compras mixtas) y cuadra base + IVA con el total. Cárgala como `gastos` con `observaciones: "Factura <proveedor> <número>"`. Recuérdale que guarde la factura en su Drive, en `Facturas/<año>/<trimestre>` (menú 📁 Configurar carpetas de Drive la crea).
+- **Ventas por plato de un TPV que no es Foodyservice:** del informe de «ventas por producto» de su programa, `ventasPlatos` con una línea por producto y mes (`nombre` tal cual sale en el TPV, `unidades`, `importe` con IVA y, si lo trae, `udsLlevar`). Si el nombre no es igual que el del plato de la carta, pon `plato` y la hoja recordará la relación. Así funcionan el food cost real y la clasificación de la carta. (Los informes de Foodyservice no pasan por aquí: se suben en el panel.)
 - **Cierre de mes:** `cierres` con el efectivo y el banco del último día y el inventario final.
 - **Ya cargado:** si la hoja avisa de que ese `id` ya se cargó, NO sigas salvo que el dueño quiera duplicarlo a propósito.

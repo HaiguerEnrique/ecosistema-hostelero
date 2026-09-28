@@ -4,7 +4,7 @@
  * Si cambias una fila o columna, cámbiala SOLO aquí.
  */
 var L = {
-  VERSION: '2.5.1',
+  VERSION: '2.6.0',
 
   INI: 'Inicio',
   RES: 'Resumen anual',
