@@ -25,6 +25,7 @@
  *   ventasPlatos: [{ mes: 1-12, nombre, unidades, importe, udsLlevar, plato }]
  *     // ventas por plato de un TPV que no es Foodyservice (resumen mensual). `nombre` = como sale en el TPV;
  *     // `plato` (opcional) = plato de la carta si el nombre no coincide. Sustituye lo cargado antes así para ese mes.
+ *   nombresTpv: [['NOMBRE EN EL TPV', 'Plato de la carta'], …]   // relaciona nombres del TPV con platos (tabla de Ventas TPV)
  * }
  */
 
@@ -147,6 +148,13 @@ function planCarga_(d) {
     });
     resumen.push('• ' + d.ventasPlatos.length + ' ventas por plato (' + porMes(d.ventasPlatos) + ')');
   }
+  if (d.nombresTpv && d.nombresTpv.length) {
+    d.nombresTpv.forEach(function (p) {
+      if (!p[0] || !p[1]) throw new Error('Hay una relación de nombres del TPV incompleta.');
+      if (plNombres.indexOf(p[1]) < 0) throw new Error('«' + p[0] + '» apunta a un plato que no existe: «' + p[1] + '».');
+    });
+    resumen.push('• ' + d.nombresTpv.length + ' nombres del TPV relacionados con platos');
+  }
   if (!resumen.length) throw new Error('Los datos están vacíos.');
   return { resumen: resumen, avisos: avisos.filter(function (a, i, arr) { return arr.indexOf(a) === i; }) };
 }
@@ -247,6 +255,10 @@ function ejecutarCarga_(d) {
     var pares = d.ventasPlatos.filter(function (v) { return v.plato && v.plato !== v.nombre; }).map(function (v) { return [v.nombre, v.plato]; });
     if (pares.length) asignarNombresTpv(pares);
     hecho.push('• ' + d.ventasPlatos.length + ' ventas por plato');
+  }
+  if (d.nombresTpv && d.nombresTpv.length) {
+    asignarNombresTpv(d.nombresTpv);
+    hecho.push('• ' + d.nombresTpv.length + ' nombres del TPV relacionados');
   }
   SpreadsheetApp.flush();
   return hecho;
