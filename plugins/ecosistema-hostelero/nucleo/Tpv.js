@@ -32,17 +32,30 @@ function importarInforme(archivo) {
   var cab = filas[0].map(function (h) { return String(h).trim(); });
   var obj = filas.slice(1).map(function (f) { var o = {}; cab.forEach(function (h, i) { o[h] = f[i]; }); return o; });
 
-  var res;
-  if (cab.indexOf('Mesa/Pedido') >= 0 && (cab.indexOf('Fecha creacion') >= 0 || cab.indexOf('Fecha creación') >= 0)) res = guardarVentas_(agregarVentas_(obj));
-  else if (cab.indexOf('Nº Factura') >= 0 && cab.indexOf('Base Imponible') >= 0) res = guardarFacturas_(agregarFacturas_(obj));
+  var res, agr, desde = tpvDesde_();
+  var recortar = function (a) {
+    recortarDesde_(a, desde);
+    if (!a.lista.length) throw new Error('Todo «' + archivo.nombre + '» es anterior al ' + desde.split('-').reverse().join('/') +
+      ' (Configuración › Datos del TPV desde). No se ha guardado nada.');
+    return a;
+  };
+  if (cab.indexOf('Mesa/Pedido') >= 0 && (cab.indexOf('Fecha creacion') >= 0 || cab.indexOf('Fecha creación') >= 0)) res = guardarVentas_(agr = recortar(agregarVentas_(obj)));
+  else if (cab.indexOf('Nº Factura') >= 0 && cab.indexOf('Base Imponible') >= 0) res = guardarFacturas_(agr = recortar(agregarFacturas_(obj)));
+  else if (cab.indexOf('Base Imponible Total') >= 0 || cab.indexOf('Total (Con propinas)') >= 0) {
+    throw new Error('«' + archivo.nombre + '» es el «Resumen de facturación» (solo totales). Hace falta el «Informe de facturas», el que trae una línea por ticket (archivo invoices-report…).');
+  }
   else throw new Error('No reconozco «' + archivo.nombre + '». Sube el «Informe de ventas» o el «Informe de facturas» de Foodyservice (Excel).');
   res.archivo = archivo.nombre;
+  if (agr.ignoradas) {
+    res.aviso = (res.aviso ? res.aviso + ' ' : '') + 'Se han ignorado ' + agr.ignoradas + ' noches anteriores al ' +
+      desde.split('-').reverse().join('/') + ' (Configuración › Datos del TPV desde).';
+  }
 
   // Guarda el original en Informes TPV/<año>
   try {
     var c = carpetas_(true);
     c.tpv.createFile(blob).setName(Utilities.formatDate(new Date(), 'Europe/Madrid', 'yyyy-MM-dd HH.mm') + ' · ' + archivo.nombre);
-  } catch (e) { res.aviso = 'No se pudo guardar el original en Drive: ' + e.message; }
+  } catch (e) { res.aviso = (res.aviso ? res.aviso + ' ' : '') + 'No se pudo guardar el original en Drive: ' + e.message; }
   return res;
 }
 
@@ -153,6 +166,27 @@ function agregarFacturas_(rows) {
   return { dias: dias, lista: dk, meses: unicos_(dk.map(function (x) { return x.slice(0, 7); })) };
 }
 function unicos_(a) { var o = {}; a.forEach(function (x) { o[x] = true; }); return Object.keys(o).sort(); }
+
+/** Configuración › «Datos del TPV desde»: las noches anteriores se ignoran al subir informes ('' = sin límite). */
+function tpvDesde_() {
+  var v = libro_().getSheetByName(L.CFG).getRange(L.C.tpvDesde).getValue();
+  return v instanceof Date ? iso_(v) : '';
+}
+/** Quita de un informe ya agregado las noches anteriores a `desde`. Deja en a.ignoradas cuántas quitó. */
+function recortarDesde_(a, desde) {
+  a.ignoradas = 0;
+  if (!desde) return a;
+  var fuera = a.lista.filter(function (d) { return d < desde; });
+  if (!fuera.length) return a;
+  fuera.forEach(function (d) { delete a.dias[d]; });
+  a.lista = a.lista.filter(function (d) { return d >= desde; });
+  a.meses = unicos_(a.lista.map(function (x) { return x.slice(0, 7); }));
+  ['prod', 'horas', 'cams'].forEach(function (k) {
+    if (a[k]) Object.keys(a[k]).forEach(function (key) { if (key.slice(0, 10) < desde) delete a[k][key]; });
+  });
+  a.ignoradas = fuera.length;
+  return a;
+}
 
 /* -------------------------------------------------------------- guardar */
 

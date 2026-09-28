@@ -19,7 +19,9 @@ var PARCHES = [
   { version: '2.2.0', descripcion: 'Varios locales en un panel: tabla «Locales del grupo» en Configuración',
     aplicar: function (ss) { prepararLocales_(ss); } },
   { version: '2.3.0', descripcion: 'Informes del TPV por día (se puede subir el cierre de cada noche) e ingresos automáticos desde el TPV',
-    aplicar: function (ss) { prepararTpvDiario_(ss); } }
+    aplicar: function (ss) { prepararTpvDiario_(ss); } },
+  { version: '2.5.0', descripcion: 'Configuración: «Datos del TPV desde» (lo anterior a esa fecha se ignora al subir informes)',
+    aplicar: function (ss) { prepararTpvDesde_(ss); } }
 ];
 
 function formulaDias_(A, F) {
@@ -80,6 +82,16 @@ function prepararTpv_(ss) {
   cfg.getRange('C9').setValue('Bolsa o envase que se da por pedido de llevar/domicilio (no por plato). Se suma al CMV teórico.').setFontColor(COLOR.note);
   bordes_(cfg.getRange('A4:B9'));
   [[TPV.DIAS, TPV.DIAS_COLS], [TPV.HORAS, TPV.HORAS_COLS], [TPV.CAM, TPV.CAM_COLS]].forEach(function (h) { hojaDatos_(h[0], h[1]); });
+}
+
+/** 2.5.0: casilla «Datos del TPV desde» en Configuración (fila 17, libre bajo los indicadores). */
+function prepararTpvDesde_(ss) {
+  var cfg = ss.getSheetByName(L.CFG), a = L.C.tpvDesde.replace('B', 'A'), c = L.C.tpvDesde.replace('B', 'C');
+  cfg.getRange(a).setValue('Datos del TPV desde (fecha)').setFontWeight('bold');
+  cfg.getRange(L.C.tpvDesde).setNumberFormat(FECHA);
+  cfg.getRange(c).setValue('Opcional. Al subir informes del TPV se ignoran las noches anteriores a esta fecha (por ejemplo, si tus cuentas empiezan más tarde que el TPV).')
+    .setFontColor(COLOR.note).setWrap(true);
+  bordes_(cfg.getRange(a + ':' + L.C.tpvDesde));
 }
 
 /** 2.3.0: las hojas de horas y camareros pasan a ser por día; nueva hoja de platos por día. */

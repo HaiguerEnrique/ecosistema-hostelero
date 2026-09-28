@@ -26,7 +26,7 @@ var PASOS_CONSTRUIR = [
   function (ss) { construirRecetas_(ss.getSheetByName(L.RECETAS)); },
   function (ss) {
     construirVentasTPV_(ss.getSheetByName(L.TPV));
-    prepararTpv_(ss); prepararLocales_(ss); hojaDatos_(TPV.PLATOS, TPV.PLATOS_COLS);
+    prepararTpv_(ss); prepararLocales_(ss); hojaDatos_(TPV.PLATOS, TPV.PLATOS_COLS); prepararTpvDesde_(ss);
   },
   function (ss) { construirResumen_(ss.getSheetByName(L.RES)); },
   function (ss) { construirInicio_(ss.getSheetByName(L.INI)); }

@@ -9,7 +9,7 @@
  * {
  *   id: 'migracion-2026-01',                // para no cargar dos veces lo mismo
  *   descripcion: 'Mis cuentas de enero a septiembre',
- *   configuracion: { nombre, anio, saldoInicial, inventarioInicial, ivaVentas, bolsaPorPedido },
+ *   configuracion: { nombre, anio, saldoInicial, inventarioInicial, ivaVentas, bolsaPorPedido, tpvDesde: 'AAAA-MM-DD' },
  *   categoriasGasto: [['Nombre', 'Tipo', 'Qué incluye'], …],   // se añaden las que falten
  *   canales: [['Nombre', 'Directo'|'Plataforma'], …],
  *   categoriasIngreso: [['Nombre', 0.10], …],
@@ -151,6 +151,7 @@ function ejecutarCarga_(d) {
     var c = d.configuracion, set = function (a1, v) { if (v !== undefined && v !== null && v !== '') cfgSh.getRange(a1).setValue(v); };
     set(L.C.nombre, c.nombre); set(L.C.anio, c.anio); set(L.C.saldoIni, c.saldoInicial); set(L.C.invIni, c.inventarioInicial);
     set(L.C.ivaVentas, c.ivaVentas); set('B9', c.bolsaPorPedido);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(c.tpvDesde || '')) { var p = c.tpvDesde.split('-'); set(L.C.tpvDesde, new Date(+p[0], p[1] - 1, +p[2])); }
     hecho.push('• Datos del negocio');
   }
   [['categoriasGasto', 'cat', 3, 'categorías de gasto'], ['canales', 'canal', 2, 'canales'], ['categoriasIngreso', 'catIng', 2, 'categorías de ingreso'],
