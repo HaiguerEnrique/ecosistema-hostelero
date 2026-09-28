@@ -25,7 +25,7 @@ Tú **preparas** los datos; el dueño los **revisa y carga** con un botón. Nunc
    - Mucho volumen (más de ~3.000 líneas o ~500 KB): por tandas, un archivo cada vez, cada uno con su `id`.
 4. **Subir:** `clasp push --force`.
 5. **Cargar (el dueño):** «Abre tu hoja y pulsa 🍽️ Ecosistema › 📥 Cargar datos preparados por Claude. Revisa el resumen y dale a Sí». Si la hoja da un error, te lo leerá: corrígelo y vuelve al paso 3.
-6. **Retirar:** cuando te diga que se ha cargado, borra `app/PersonalDatos.js` y `clasp push --force`. Los datos ya están en la hoja; el archivo solo era el transporte.
+6. **Retirar:** cuando te diga que se ha cargado, deja `app/PersonalDatos.js` con una sola línea, `var DATOS_CLAUDE = null;`, y `clasp push --force`. Los datos ya están en la hoja; el archivo solo era el transporte. (No lo borres: si solo desaparece un archivo, clasp responde «Script is already up to date» y no sube nada, así que los datos seguirían dentro.)
 7. **Apuntar** en `NOTAS.md` las decisiones (cómo se clasifica cada proveedor, categorías nuevas, platos dados de alta).
 
 ## Todo de una vez

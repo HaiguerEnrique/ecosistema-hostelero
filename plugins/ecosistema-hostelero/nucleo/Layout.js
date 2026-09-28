@@ -1,7 +1,7 @@
 /**
  * Ecosistema Hostelero — mapa de la plantilla.
  * Todas las piezas (plantilla, panel, chat) leen las posiciones desde aquí.
- * Si cambias una fila o columna, cámbiala SOLO aquí.
+ * Si cambias una fila o columna, cámbiala SOLO aquí (y sube L.VERSION).
  */
 var L = {
   VERSION: '2.6.1',
